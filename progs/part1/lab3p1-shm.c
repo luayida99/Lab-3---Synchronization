@@ -8,7 +8,22 @@
 
 int main() {
 
-    int i, j, pid;
+    int i, j, pid, shmid;
+    int* shm;
+
+    shmid = shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT | 0600);
+    if (shmid == -1) {
+        printf("Cannot create shared memory!\n");
+        exit(1);
+    }
+
+    shm = (int*)shmat(shmid, NULL, 0);
+    if (shm == (int*) -1) {
+        printf("Cannot attach to shared memory!\n");
+        exit(1);
+    }
+    
+    shm[0] = 0;
     
     for(i=0; i<NUM_PROCESSES; i++)
     {
@@ -18,6 +33,9 @@ int main() {
     }
 
     if(pid == 0) {
+
+        while (shm[0] != i);
+
         printf("I am child %d\n", i);
 
         for(j = i*10; j<i*10 + 10; j++){
@@ -27,11 +45,15 @@ int main() {
         }
 
         printf("\n\n");
+        shm[0]++;
     }
     else {
         for(i=0; i<NUM_PROCESSES; i++) 
             wait(NULL);
     }
+
+    shmdt((char*)shm);
+    shmctl( shmid, IPC_RMID, 0);
 
 }
 
