@@ -26,7 +26,7 @@ int main() {
     }
 
     if(pid == 0) {
-        sem_post(&sems[i]);
+        sem_wait(&sems[i]);
         printf("I am child %d\n", i);
 
         for(j = i*10; j<i*10 + 10; j++){
@@ -37,10 +37,13 @@ int main() {
 
         printf("\n\n");
         
-        sem_wait(&sems[i]);
+        if (i + 1 != NUM_PROCESSES) {
+          sem_post(&sems[i+1]);
+        }
         sem_destroy(&sems[i]);
     }
     else {
+        sem_post(&sems[0]);
         for(i=0; i<NUM_PROCESSES; i++) 
             wait(NULL);
     }
