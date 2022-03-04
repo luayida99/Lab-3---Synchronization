@@ -24,7 +24,6 @@ void init_barrier(int numproc) {
 
     *nproc = numproc;
     *count = 0;
-    printf("Count: %d\n", *count);
 
     //shared memory for barrier
     shmid_b = shmget(IPC_PRIVATE, 2 * sizeof(sem_t), IPC_CREAT | 0600);
@@ -36,10 +35,8 @@ void init_barrier(int numproc) {
 }
 
 void reach_barrier() {
-    printf("Reached barrier\n");
     sem_wait(&sems[1]);
     *count = *count + 1;
-    printf("Current count %d\n", *count);
     sem_post(&sems[1]);
     if (*count == *nproc) {
         sem_post(&sems[0]);
