@@ -3,8 +3,10 @@
 #include <limits.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/shm.h>
 #include <sys/wait.h>
 #include "config.h"
+#include "barrier.h"
 
 #define NUM_PROCESSES  8
 
@@ -12,7 +14,19 @@ int main() {
 
     int vect[VECT_SIZE];
     int pid;
-    int largest[NUM_PROCESSES], smallest[NUM_PROCESSES];
+    int shmid_l, shmid_s;
+    int* largest;
+    int* smallest;
+
+    // Init barrier
+    init_barrier(NUM_PROCESSES+1);
+
+    // Shared memory for largest and smallest array
+    shmid_l = shmget(IPC_PRIVATE, NUM_PROCESSES * sizeof(int), IPC_CREAT | 0600);
+    largest = (int *) shmat(shmid_l, NULL, 0);
+
+    shmid_s = shmget(IPC_PRIVATE, NUM_PROCESSES * sizeof(int), IPC_CREAT | 0600);
+    smallest = (int *) shmat(shmid_s, NULL, 0);
 
     float per_process_raw = (float) VECT_SIZE / NUM_PROCESSES;
     int per_process = (int) per_process_raw;
@@ -57,11 +71,13 @@ int main() {
         }
         largest[i] = big;
         smallest[i] = small;
+        reach_barrier();
 
     }
     else 
     {
         start = clock();
+        reach_barrier();
         for(j=0; j<NUM_PROCESSES; j++)
         {
             if(largest[j] > big)
@@ -81,6 +97,8 @@ int main() {
         // Clean up process table
         for(j=0; j<NUM_PROCESSES; j++)
             wait(NULL);
+
+        destroy_barrier(pid);
     }
 }
 
