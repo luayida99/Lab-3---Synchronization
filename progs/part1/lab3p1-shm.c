@@ -52,7 +52,7 @@ int main() {
             wait(NULL);
     }
 
-    shmdt((char*)shm);
+    shmdt(shm);
     shmctl( shmid, IPC_RMID, 0);
 
 }
