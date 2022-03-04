@@ -6,23 +6,20 @@
 #include <sys/shm.h>
 #include "barrier.h"
 
-int* nproc;
+int nproc;
 int* count;
 int* shm;
 int shmid_c;
-int shmid_n;
 int shmid_b;
 sem_t* sems;
 
 void init_barrier(int numproc) {
-    //shared memory for nproc and count
+    //init nproc
+    nproc = numproc;
+
+    //shared memory for count
     shmid_c = shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT | 0600);
     count = (int*) shmat(shmid_c, NULL, 0);
-
-    shmid_n = shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT | 0600);
-    nproc = (int*) shmat(shmid_n, NULL, 0);
-
-    *nproc = numproc;
     *count = 0;
 
     //shared memory for barrier
@@ -38,7 +35,7 @@ void reach_barrier() {
     sem_wait(&sems[1]);
     *count = *count + 1;
     sem_post(&sems[1]);
-    if (*count == *nproc) {
+    if (*count == nproc) {
         sem_post(&sems[0]);
     } 
     sem_wait(&sems[0]);
@@ -51,8 +48,5 @@ void destroy_barrier(int my_pid) {
         sem_destroy(&sems[1]);
         shmctl(shmid_c, IPC_RMID, 0);
         shmctl(shmid_b, IPC_RMID, 0);
-        shmctl(shmid_n, IPC_RMID, 0);
     }
 }
-
-
