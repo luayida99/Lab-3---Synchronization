@@ -14,7 +14,15 @@ int main() {
     sem_t *sem;
 
     shmid = shmget(IPC_PRIVATE, sizeof(sem_t), IPC_CREAT | 0600);
+    if (shmid == -1) {
+        printf("Cannot create shared memory!\n");
+        exit(1);
+    }
     sem = (sem_t *) shmat(shmid, NULL, 0);
+    if (shm == (sem_t*) -1) {
+        printf("Cannot attach to shared memory!\n");
+        exit(1);
+    }
 
     sem_init(sem, 1, 0);
 

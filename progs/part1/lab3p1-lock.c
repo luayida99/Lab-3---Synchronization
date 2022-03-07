@@ -15,7 +15,16 @@ int main() {
     int shmid;
     
     shmid = shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT | 0600);
+    if (shmid == -1) {
+        printf("Cannot create shared memory!\n");
+        exit(1);
+    }
+
     lock = shmat(shmid, NULL, 0);
+    if (lock == -1) {
+        printf("Cannot attach to shared memory!\n");
+        exit(1);
+    }
 
     // If lock is 1, we get to run our code.
     lock[0] = 1;

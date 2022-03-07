@@ -19,12 +19,28 @@ void init_barrier(int numproc) {
 
     //shared memory for count
     shmid_c = shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT | 0600);
+    if (shmid_c == -1) {
+        printf("Cannot create shared memory (count variable)!\n");
+        exit(1);
+    }
     count = (int*) shmat(shmid_c, NULL, 0);
+    if (count == (int*) -1) {
+        printf("Cannot attach to shared memory (count variable)!\n");
+        exit(1);
+    }
     *count = 0;
 
     //shared memory for barrier
     shmid_b = shmget(IPC_PRIVATE, 2 * sizeof(sem_t), IPC_CREAT | 0600);
+    if (shmid_b == -1) {
+        printf("Cannot create shared memory (semaphore)!\n");
+        exit(1);
+    }
     sems = (sem_t*) shmat(shmid_b, NULL, 0);
+    if (sems == (sem_t*) -1) {
+        printf("Cannot attach to shared memory (semaphore)!\n");
+        exit(1);
+    }
 
     //sems[0] is barrier, sems[1] is mutex for count
     sem_init(&sems[0], 1, 0);

@@ -23,10 +23,26 @@ int main() {
 
     // Shared memory for largest and smallest array
     shmid_l = shmget(IPC_PRIVATE, NUM_PROCESSES * sizeof(int), IPC_CREAT | 0600);
+    if (shmid_l == -1) {
+        printf("Cannot create shared memory (largest array)!\n");
+        exit(1);
+    }
     largest = (int *) shmat(shmid_l, NULL, 0);
+    if (largest == (int*) -1) {
+        printf("Cannot attach to shared memory (largest array)!\n");
+        exit(1);
+    }
 
     shmid_s = shmget(IPC_PRIVATE, NUM_PROCESSES * sizeof(int), IPC_CREAT | 0600);
+    if (shmid_s == -1) {
+        printf("Cannot create shared memory (smallest array)!\n");
+        exit(1);
+    }
     smallest = (int *) shmat(shmid_s, NULL, 0);
+    if (smallest == (int*) -1) {
+        printf("Cannot attach to shared memory (smallest array)!\n");
+        exit(1);
+    }
 
     float per_process_raw = (float) VECT_SIZE / NUM_PROCESSES;
     int per_process = (int) per_process_raw;
