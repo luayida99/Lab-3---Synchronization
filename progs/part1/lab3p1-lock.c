@@ -20,8 +20,8 @@ int main() {
         exit(1);
     }
 
-    lock = shmat(shmid, NULL, 0);
-    if (lock == -1) {
+    lock = (int*) shmat(shmid, NULL, 0);
+    if (lock == (int*) -1) {
         printf("Cannot attach to shared memory!\n");
         exit(1);
     }

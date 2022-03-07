@@ -19,7 +19,7 @@ int main() {
         exit(1);
     }
     sem = (sem_t *) shmat(shmid, NULL, 0);
-    if (shm == (sem_t*) -1) {
+    if (sem == (sem_t*) -1) {
         printf("Cannot attach to shared memory!\n");
         exit(1);
     }
