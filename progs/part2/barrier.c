@@ -29,6 +29,8 @@ void init_barrier(int numproc) {
         exit(1);
     }
     *count = 0;
+    printf("Count : %d", *count);
+    fflush(stdout);
 
     //shared memory for barrier
     shmid_b = shmget(IPC_PRIVATE, 2 * sizeof(sem_t), IPC_CREAT | 0600);
