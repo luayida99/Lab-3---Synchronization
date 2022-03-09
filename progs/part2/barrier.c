@@ -34,10 +34,12 @@ void init_barrier(int numproc) {
 void reach_barrier() {
     sem_wait(&sems[1]);
     *count = *count + 1;
-    sem_post(&sems[1]);
+    
     if (*count == nproc) {
         sem_post(&sems[0]);
     } 
+    sem_post(&sems[1]);
+
     sem_wait(&sems[0]);
     sem_post(&sems[0]);
 }
