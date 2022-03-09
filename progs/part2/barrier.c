@@ -11,7 +11,7 @@ int* count;
 int* shm;
 int shmid_c;
 int shmid_b;
-sem_t* sems;
+Barrier *barrier;
 
 void init_barrier(int numproc) {
     //init nproc
@@ -31,37 +31,38 @@ void init_barrier(int numproc) {
     *count = 0;
 
     //shared memory for barrier
-    shmid_b = shmget(IPC_PRIVATE, 2 * sizeof(sem_t), IPC_CREAT | 0600);
+    shmid_b = shmget(IPC_PRIVATE, sizeof(Barrier), IPC_CREAT | 0600);
     if (shmid_b == -1) {
         printf("Cannot create shared memory (semaphore)!\n");
         exit(1);
     }
-    sems = (sem_t*) shmat(shmid_b, NULL, 0);
-    if (sems == (sem_t*) -1) {
+    barrier = (Barrier*) shmat(shmid_b, NULL, 0);
+    if (barrier == (Barrier*) -1) {
         printf("Cannot attach to shared memory (semaphore)!\n");
         exit(1);
     }
 
     //sems[0] is barrier, sems[1] is mutex for count
-    sem_init(&sems[0], 1, 0);
-    sem_init(&sems[1], 1, 1);
+    sem_init(&barrier->sems[0], 1, 0);
+    sem_init(&barrier->sems[1], 1, 1);
 }
 
 void reach_barrier() {
-    sem_wait(&sems[1]);
-    *count = *count + 1;
-    sem_post(&sems[1]);
+    sem_wait(&barrier->sems[1]);
+    *count++;
+    
     if (*count == nproc) {
-        sem_post(&sems[0]);
+        sem_post(&barrier->sems[0]);
     } 
-    sem_wait(&sems[0]);
-    sem_post(&sems[0]);
+    sem_post(&barrier->sems[1]);
+    sem_wait(&barrier->sems[0]);
+    sem_post(&barrier->sems[0]);
 }
 
 void destroy_barrier(int my_pid) {
     if(my_pid != 0) {
-        sem_destroy(&sems[0]);
-        sem_destroy(&sems[1]);
+        sem_destroy(&barrier->sems[0]);
+        sem_destroy(&barrier->sems[1]);
         shmctl(shmid_c, IPC_RMID, 0);
         shmctl(shmid_b, IPC_RMID, 0);
     }
