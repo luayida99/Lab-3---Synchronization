@@ -49,7 +49,7 @@ void init_barrier(int numproc) {
 
 void reach_barrier() {
     sem_wait(&barrier->sems[1]);
-    *count++;
+    *count = *count + 1;
     
     if (*count == nproc) {
         sem_post(&barrier->sems[0]);
