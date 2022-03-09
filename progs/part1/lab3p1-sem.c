@@ -12,7 +12,16 @@ int main() {
     int i, j, pid, shmid;
 
     shmid = shmget(IPC_PRIVATE, NUM_PROCESSES * sizeof(sem_t), IPC_CREAT | 0600);
+    if (shmid == -1) {
+        printf("Cannot create shared memory!\n");
+        exit(1);
+    }
+
     sem_t* sems = (sem_t*) shmat(shmid, NULL, 0);
+    if (sems == (sem_t*) -1) {
+        printf("Cannot attach to shared memory!\n");
+        exit(1);
+    }
 
     for (int k = 0; k < NUM_PROCESSES; k++) {
         sem_init(&sems[k], 1, 0);
